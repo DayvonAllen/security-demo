@@ -8,6 +8,7 @@ import guru.sfg.brewery.web.model.MyBeerOrderCustomerPagedList;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +24,13 @@ public class BeerOrderController {
     private static final Integer DEFAULT_PAGE_NUMBER=0;
     private static final Integer DEFAULT_PAGE_SIZE = 25;
 
+
     public BeerOrderController(MyBeerOrderService myBeerOrderService, CustomerRepository customerRepository) {
         this.myBeerOrderService = myBeerOrderService;
         this.customerRepository = customerRepository;
     }
 
+    @PreAuthorize("hasAuthority('order.read') OR hasAuthority('customer.order.read') AND @beerOrderAuthenticationManager.customerIdMatches(authentication, #id)")
     @GetMapping(value = "/customer/{id}")
     public MyBeerOrderCustomerPagedList getAllBeerOrdersByCustomer(
             @PathVariable UUID id,
@@ -42,6 +45,7 @@ public class BeerOrderController {
         }
         return myBeerOrderService.getAllByCustomerId(id, PageRequest.of(pageNumber, pageSize, Sort.by("id").descending()));
     }
+
     @GetMapping(value = "customers/list")
     public List<Customer> getAllCustomersTest(){
         System.out.println(SecurityContextHolder.getContext());
