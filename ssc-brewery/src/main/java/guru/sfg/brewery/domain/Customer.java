@@ -16,10 +16,13 @@
  */
 package guru.sfg.brewery.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import guru.sfg.brewery.domain.security.UserEntity;
+
+import javax.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,7 +47,12 @@ public class Customer extends BaseEntity {
     private UUID apiKey;
 
     @OneToMany(mappedBy = "customer")
+    @JsonBackReference
     private Set<BeerOrder> beerOrders;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonBackReference
+    private Set<UserEntity> users = new HashSet<>();
 
     public Customer() {
     }
@@ -56,6 +64,12 @@ public class Customer extends BaseEntity {
 
     public Customer(String customerName) {
         this.customerName = customerName;
+    }
+
+    public Customer(String customerName, UUID apiKey, Set<UserEntity> users) {
+        this.customerName = customerName;
+        this.apiKey = apiKey;
+        this.users = users;
     }
 
     public String getCustomerName() {
@@ -80,5 +94,13 @@ public class Customer extends BaseEntity {
 
     public void setBeerOrders(Set<BeerOrder> beerOrders) {
         this.beerOrders = beerOrders;
+    }
+
+    public Set<UserEntity> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<UserEntity> users) {
+        this.users = users;
     }
 }

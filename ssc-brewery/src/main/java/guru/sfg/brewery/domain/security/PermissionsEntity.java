@@ -8,17 +8,17 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-public class Authority extends BaseEntity {
+public class PermissionsEntity extends BaseEntity {
 
     private String permission;
 
     @ManyToMany(mappedBy = "permission")
     private Set<Role> roles = new HashSet<>();
 
-    public Authority() {
+    public PermissionsEntity() {
     }
 
-    public Authority(String permission) {
+    public PermissionsEntity(String permission) {
         this.permission = permission;
     }
 
@@ -42,8 +42,8 @@ public class Authority extends BaseEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Authority authority = (Authority) o;
-        return Objects.equals(permission, authority.permission);
+        PermissionsEntity permissionsEntity = (PermissionsEntity) o;
+        return Objects.equals(permission, permissionsEntity.permission);
     }
 
     @Override

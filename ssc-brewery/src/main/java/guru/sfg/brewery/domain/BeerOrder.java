@@ -16,6 +16,7 @@
  */
 package guru.sfg.brewery.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -48,6 +49,7 @@ public class BeerOrder extends BaseEntity {
     private String customerRef;
 
     @ManyToOne
+    @JsonManagedReference
     private Customer customer;
 
     @OneToMany(mappedBy = "beerOrder", cascade = CascadeType.ALL)

@@ -1,6 +1,13 @@
 package guru.sfg.brewery.domain.security;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import guru.sfg.brewery.domain.BaseEntity;
+import guru.sfg.brewery.domain.Customer;
+import org.springframework.security.core.CredentialsContainer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -11,16 +18,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
-public class UserEntity extends BaseEntity {
+public class UserEntity extends BaseEntity implements UserDetails, CredentialsContainer {
 
     private String username;
 
     private String email;
 
     private String password;
-
-   @Transient
-    private Set<Authority> authorities = new HashSet<>();
 
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = {@JoinColumn(name = "USER_ID", referencedColumnName = "ID")},
@@ -36,6 +40,11 @@ public class UserEntity extends BaseEntity {
 
     private Boolean enabled = true;
 
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private Customer customer;
+
     public UserEntity() {
     }
 
@@ -45,11 +54,14 @@ public class UserEntity extends BaseEntity {
         this.password = password;
     }
 
-    public UserEntity(String username, String email, String password, Set<Authority> authorities, Boolean accountNonExpired, Boolean accountNonLocked, Boolean credentialsNonExpired, Boolean enabled) {
+    public UserEntity(UUID id, Integer version, OffsetDateTime createdDate, OffsetDateTime lastModifiedDate, String username,
+                      String email, String password, Set<Role> roles,
+                      Boolean accountNonExpired, Boolean accountNonLocked, Boolean credentialsNonExpired, Boolean enabled) {
+        super(id, version, createdDate, lastModifiedDate);
         this.username = username;
         this.email = email;
         this.password = password;
-        this.authorities = authorities;
+        this.roles = roles;
         this.accountNonExpired = accountNonExpired;
         this.accountNonLocked = accountNonLocked;
         this.credentialsNonExpired = credentialsNonExpired;
@@ -65,6 +77,26 @@ public class UserEntity extends BaseEntity {
 
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return this.accountNonExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.accountNonLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return this.credentialsNonExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
     }
 
     public String getEmail() {
@@ -87,14 +119,23 @@ public class UserEntity extends BaseEntity {
         this.password = password;
     }
 
-    public Set<Authority> getAuthorities() {
+    public Customer getCustomer() {
+        return customer;
+    }
 
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    @Transient
+    public Set<GrantedAuthority> getAuthorities() {
         return this.
                 roles.
                 stream().
-                map(Role::getPermission).
-                flatMap(Set::stream).
-                collect(Collectors.toSet());
+                map(Role::getPermission)
+                .flatMap(Set::stream)
+                .map(authority -> new SimpleGrantedAuthority(authority.getPermission()))
+                .collect(Collectors.toSet());
     }
 
 
@@ -151,5 +192,10 @@ public class UserEntity extends BaseEntity {
     @Override
     public int hashCode() {
         return Objects.hash(username, email, password);
+    }
+
+    @Override
+    public void eraseCredentials() {
+        this.password = null;
     }
 }

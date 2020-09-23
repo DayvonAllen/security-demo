@@ -31,6 +31,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .antMatchers(HttpMethod.PUT, "api/v1/beer/*").hasAnyRole("ADMIN", "CUSTOMER")
                 .anyRequest().authenticated()
                 .and()
+                .httpBasic()
+                .and()
                 .formLogin();
     }
 

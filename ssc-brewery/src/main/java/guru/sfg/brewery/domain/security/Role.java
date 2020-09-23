@@ -18,7 +18,7 @@ public class Role extends BaseEntity {
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @JoinTable(name = "role_authority", joinColumns = {@JoinColumn(name = "ROLE_ID", referencedColumnName = "ID")},
             inverseJoinColumns = {@JoinColumn(name="AUTHORITY_ID",referencedColumnName = "ID")})
-    private Set<Authority> permission = new HashSet<>();
+    private Set<PermissionsEntity> permission = new HashSet<>();
 
     public Role() {
     }
@@ -27,7 +27,7 @@ public class Role extends BaseEntity {
         this.name = name;
     }
 
-    public Role(String name, Set<Authority> permission) {
+    public Role(String name, Set<PermissionsEntity> permission) {
         this.name = name;
         this.permission = permission;
     }
@@ -48,11 +48,11 @@ public class Role extends BaseEntity {
         this.users = users;
     }
 
-    public Set<Authority> getPermission() {
+    public Set<PermissionsEntity> getPermission() {
         return permission;
     }
 
-    public void setPermission(Set<Authority> authorities) {
+    public void setPermission(Set<PermissionsEntity> authorities) {
         this.permission = authorities;
     }
 
